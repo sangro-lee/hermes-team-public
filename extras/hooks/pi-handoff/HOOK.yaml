@@ -1,0 +1,4 @@
+name: pi-handoff
+description: PI 대화가 압축될 때마다 Claude가 인계 노트(hermes-team/state/pi-handoff.md)를 다시 쓴다
+events:
+  - session:compress

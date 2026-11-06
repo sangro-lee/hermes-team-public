@@ -1,0 +1,8 @@
+{
+  "guild_id": "디스코드_서버_ID",
+  "category_id": "Projects_카테고리_ID",
+  "projects_root": "~/Projects",
+  "profiles": ["default", "coder", "analyst", "reviewer", "writer", "scholar"],
+  "lobby_channels": ["로비_채널_ID"],
+  "reasoning": {"default": "medium", "coder": "low", "analyst": "medium", "reviewer": "medium", "writer": "low", "scholar": "low"}
+}

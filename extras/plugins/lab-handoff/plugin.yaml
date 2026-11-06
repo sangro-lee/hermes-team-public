@@ -1,0 +1,14 @@
+name: lab-handoff
+label: Lab PI handoff
+kind: standalone
+version: 0.1.0
+description: >
+  PI(default) 새 대화의 시스템 프롬프트에 인계 노트(hermes-team/state/pi-handoff.md)를 넣고,
+  인계가 끝난 긴 PI 대화(state/pi-reset-requested)를 다음 사용자 메시지에서 /new와 같은 경로로 새로 시작하며,
+  PI의 매 턴 메시지 끝에 핵심 규칙(souls/pi-rules.md)을 붙이고, /brief 로 아침 브리핑을 바로 돌리며,
+  터미널로 만든 칸반 카드에도 완료 알림 구독을 붙인다.
+author: hermes-team
+provides_hooks:
+  - pre_gateway_dispatch
+  - pre_llm_call
+  - post_tool_call

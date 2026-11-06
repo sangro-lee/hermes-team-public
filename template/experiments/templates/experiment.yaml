@@ -1,0 +1,32 @@
+experiment_id: "vqc_mlp_seed42_001"
+title: "VQC denoiser와 MLP denoiser 비교"
+research_question: "동일한 데이터·학습 조건에서 VQC denoiser가 MLP baseline과 어떤 차이를 보이는가?"
+hypothesis: "REPLACE_WITH_TESTABLE_HYPOTHESIS"
+baseline: "MLP denoiser"
+method: "VQC denoiser"
+code_commit: "REPLACE_WITH_GIT_COMMIT"
+data_version: "REPLACE_WITH_DATA_VERSION"
+seed: 42
+config_files:
+  - "REPLACE_WITH_CONFIG_PATH"
+command: "REPLACE_WITH_EXACT_RUN_COMMAND"   # 예: uv run python src/train.py --config configs/a.yaml --seed 42
+resources:
+  partition: "REPLACE_WITH_PARTITION"
+  gpu_count: 1
+  cpu_count: 4
+  memory: "16G"
+  time_limit: "00:30:00"
+metrics:
+  - "REPLACE_WITH_PRIMARY_METRIC"
+success_criteria:
+  - "REPLACE_WITH_NUMERIC_OR_TESTABLE_CRITERION"
+stop_conditions:
+  - "예상 walltime을 초과할 경우 중단"
+expected_artifacts:
+  - "metrics.json"
+  - "summary.md"
+  - "training.log"
+approval:
+  status: "draft"
+  approved_by: null
+  approved_at: null

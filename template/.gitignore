@@ -1,0 +1,27 @@
+.env
+.env.*
+!.env.example
+secrets/
+credentials/
+*.pem
+*.key
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+logs/
+tmp/
+.cache/
+*.log
+data/
+checkpoints/
+*.ckpt
+*.pt
+*.pth
+*.npy
+*.npz
+*.parquet
+.dvc/cache/
+
+# 사용자가 넣은 논문 PDF와 추출 텍스트 (저작권·용량 — git에 올리지 않음)
+docs/literature/pdfs/

@@ -1,0 +1,6 @@
+# Example only: edit paths and test the script manually before enabling.
+# Runs every weekday at 09:00 server-local time.
+# 0 9 * * 1-5 /REPLACE/WITH/PROJECT/scripts/daily_research_brief.sh >> /REPLACE/WITH/PROJECT/logs/daily_brief.log 2>&1
+#
+# Cron has a minimal environment. Use absolute paths and explicitly activate
+# the required Python environment. Do not schedule GPU jobs with this example.

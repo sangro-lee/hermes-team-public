@@ -1,0 +1,30 @@
+% 그림: 사람이 챙기지 않아도 도는 자동 장치
+\documentclass[tikz,border=10pt]{standalone}
+\input{fig-common}
+\begin{document}
+\begin{tikzpicture}[font=\small]
+  \tikzset{trig/.style={box=gray,minimum width=34mm,minimum height=12mm},
+           act/.style={box=violet,text width=56mm,minimum height=12mm},
+           res/.style={box=green,minimum width=34mm,minimum height=12mm}}
+  % 1 아침 브리핑
+  \node[trig] (t1) at (0,0) {\textbf{매일 09:00}\\[-1pt]{\footnotesize 또는 PI 봇의 \texttt{/brief}}};
+  \node[act]  (a1) at (58mm,0) {\textbf{아침 브리핑}\\[-1pt]{\footnotesize 스크립트가 kanban 보드·git 상태를 모으고 Claude가 정리 (PI 모델은 쓰지 않음)}};
+  \node[res]  (r1) at (116mm,0) {\#hermes 또는\\보낸 채널에 게시};
+  % 2 차단 감시
+  \node[trig] (t2) at (0,-22mm) {\textbf{10분마다}\\[-1pt]{\footnotesize 같은 kanban 카드가 2번 막힘}};
+  \node[act]  (a2) at (58mm,-22mm) {\textbf{차단 감시}\\[-1pt]{\footnotesize Claude가 원인 진단, 허용 범위 안의 해결은 바로 (실행 권한, 명세 불일치, kanban 카드 정리)}};
+  \node[res]  (r2) at (116mm,-22mm) {\#hermes에 결과\\{\footnotesize ``연구자 결정 필요''만 답함}};
+  % 3 PI 인계
+  \node[trig] (t3) at (0,-44mm) {\textbf{PI 대화 압축}\\[-1pt]{\footnotesize 대화가 길어질 때마다}};
+  \node[act]  (a3) at (58mm,-44mm) {\textbf{PI 대화 인계}\\[-1pt]{\footnotesize Claude가 인계 노트를 다시 씀. 세 번째 압축이면 다음 메시지에서 새 대화를 열고 노트를 넣어 줌}};
+  \node[res]  (r3) at (116mm,-44mm) {PI가 규칙과\\진행 상황을 유지};
+  \foreach \i in {1,2,3} {
+    \draw[arr=muted] (t\i) -- (a\i);
+    \draw[arr=muted] (a\i) -- (r\i);
+  }
+  \node[lab,font=\footnotesize\bfseries] at (0,12mm) {언제};
+  \node[lab,font=\footnotesize\bfseries] at (58mm,12mm) {무엇을};
+  \node[lab,font=\footnotesize\bfseries] at (116mm,12mm) {결과};
+  \node[lab,anchor=north] at (58mm,-54mm) {설치: \texttt{extras/install\_extras.sh} \quad 매 턴 PI 규칙 리마인더(\texttt{souls/pi-rules.md})도 같은 플러그인이 붙입니다};
+\end{tikzpicture}
+\end{document}

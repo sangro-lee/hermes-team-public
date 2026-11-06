@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# 공개 저장소 보호: commit에 개인 정보가 섞이면 막는다.
+#   - 내 연구자 이름(souls/_team_ids.md), 홈 경로(/home/<나>), Discord ID 형태의 17~20자리 숫자
+#   - 내 PC 전용 파일(team.json, projects.json, souls/_team_ids.md, memories/, pptx)
+# 켜기: git config core.hooksPath tools/git-hooks   (set_name.sh 가 해 준다)
+# 정말 필요할 때만 건너뛰기: git commit --no-verify
+set -uo pipefail
+root=$(git rev-parse --show-toplevel)
+name=$(grep -oP '^\s*-\s*연구자\s+\K[^\s:`]+' "$root/souls/_team_ids.md" 2>/dev/null | head -1)
+bad=0
+
+private=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(team\.json|projects\.json|souls/_team_ids\.md|memories/)|\.pptx$')
+if [[ -n "$private" ]]; then echo "✗ 내 PC 전용 파일이 commit에 들어 있음:"; echo "$private" | sed 's/^/    /'; bad=1; fi
+
+pat="/home/${USER}\b|\b[0-9]{17,20}\b"
+[[ -n "$name" && "$name" != "<유저>" ]] && pat="$pat|$name"
+hits=$(git diff --cached -U0 --diff-filter=ACMR -- . ':!*.example.*' ':!extras/_team_ids.example.md' \
+       | grep -E '^\+[^+]' | sed -E 's/\b([0-9])\1{16,19}\b/<예시ID>/g' | grep -nE "$pat" | head -n 10)
+if [[ -n "$hits" ]]; then
+  echo "✗ 개인 정보로 보이는 줄 (연구자 이름은 {{연구자}}, 경로는 ~ 로 쓴다):"; echo "$hits" | sed 's/^/    /'; bad=1
+fi
+[[ $bad -eq 0 ]] || { echo "commit을 막았습니다. 고친 뒤 다시 commit 하세요."; exit 1; }

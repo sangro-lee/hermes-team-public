@@ -1,0 +1,5 @@
+아침 연구실 브리핑을 작성해라. 읽기 전용 작업이다: 카드 생성·unblock·파일 수정·commit·실험 실행을 하지 마라.
+1) hermes kanban boards list 로 보드 목록을 확인하고, 각 보드에서 hermes kanban --board <보드> list 를 실행한다.
+2) 프로젝트별로 정리한다: 지난 24시간에 끝난 카드, 진행 중(running) 카드, blocked 카드(원인과 풀기 위한 명령), 사용자 승인 대기 항목.
+3) ~/Projects 아래 각 프로젝트에서 git status --short 와 git branch 로 merge 대기 중인 agent/* 브랜치를 확인한다.
+4) 맨 위에 '오늘 사용자가 할 일'을 최대 3줄로 쓰고, 그 아래 프로젝트별 표를 붙인다. 한국어로 짧게. 변화가 없는 프로젝트는 한 줄로만 쓴다.

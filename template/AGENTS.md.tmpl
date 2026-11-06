@@ -1,0 +1,103 @@
+# AGENTS.md — {{NAME}}
+
+> Hermes와 코딩 작업자(Claude Code / Antigravity CLI)가 이 프로젝트에서 작업할 때 따르는 규칙입니다.
+
+## 프로젝트 식별
+- 이름: `{{NAME}}`
+- 태그: **[{{TAG}}]** — 이 프로젝트에 대한 모든 답변의 첫 줄을 `[{{TAG}}]`로 시작할 것
+- 루트: `{{ROOT}}`
+- 한 줄 설명: {{SUMMARY}}
+- Discord 채널: `#{{NAME}}` (이 채널의 대화는 이 프로젝트에 대한 것으로 간주)
+
+다른 프로젝트(`~/Projects/` 아래 다른 폴더)의 파일은 읽거나 수정하지 않는다.
+
+## 작업 시작 전에 반드시 읽을 파일
+1. `research/RESEARCH_STATE.md` — 현재 목표, 상태, 다음 행동
+2. `research/HYPOTHESES.md` — 검증 중인 가설
+3. `config/policy.yaml` — 자동 허용 / 승인 필요 / 금지 작업
+4. 관련 실험 명세 `experiments/<id>.yaml`
+
+## 권한 규칙 (config/policy.yaml 요약)
+| 구분 | 작업 |
+|---|---|
+| 자동 허용 | 문서 읽기·요약, 코드 검색, 로그 요약, `scripts/researchctl` 의 help/config/state/list/validate, 1분 이내 CPU 테스트 |
+| 자동 허용 (환경 준비) | **`bash scripts/researchctl doctor --fix`** — 실행 권한, uv 환경(`uv sync`), git 저장소가 없으면 `git init` + 첫 commit, 명세 검증을 한 번에 점검·수리. 작업 시작 전이나 환경 오류가 나면 먼저 실행하고 **결과를 보고** |
+| **승인 필요** (Discord에서 먼저 묻기) | 실험 실행, `research/` 파일 수정(단, PI가 `RESEARCH_STATE.md`의 `## 결정 기록`에 {{연구자}} 결정을 한 줄 추가하는 것과, 이미 승인된 결정·FINDINGS에 맞춰 `RESEARCH_STATE.md` 본문(현재 상태·다음 권장 행동·최근 실험)을 현재화하는 것은 제외. 후자는 Claude Code가 쓰고 PI가 commit 후 보고), 파일 삭제, 실험 명세의 approval 변경, **새 패키지 추가(`uv add`)** |
+| 금지 | `sudo`, 시스템·SSH 설정 변경, 자격 증명 출력·커밋, 프로젝트 루트 밖 파일 수정 |
+
+- Hermes가 직접 쓸 수 있는 경로: `research/`, `experiments/`, `results/`, `docs/` (승인 규칙은 위 표를 따름)
+- 코드(`src/`, `scripts/`, `schemas/`)는 아래 "코드 작성 위임" 절차로만 변경
+- 그림 코드(`plots/`)는 analyst가 Claude Code에 맡겨 만든다. `results/<id>/`만 읽고 `results/<id>/figures/`에만 쓴다
+- 승인을 요청할 때는 **무엇을, 왜, 어떤 명령으로** 할지 한 메시지에 적는다.
+- `research/` 수정은 diff를 먼저 보여 주고 승인을 받은 뒤 반영한다.
+
+## 실험 사이클
+0. 준비 점검: `bash scripts/researchctl doctor` → 문제가 있으면 `bash scripts/researchctl doctor --fix` (자동 허용)
+1. 명세 확인: `scripts/researchctl list`, `scripts/researchctl validate`
+2. 명세의 `approval.status`가 `approved`가 아니면 실행하지 않는다. 연구자에게 승인을 요청한다.
+3. 승인되면: 실행할 코드가 들어 있는 commit을 `code_commit`에 적고, `approved_by`·`approved_at`을 기록한 뒤 다시 validate 한다.
+   - `code_commit`은 **코드의 revision**이다. 명세 파일을 commit하면 HEAD가 바뀌므로 `code_commit == HEAD`를 요구하지 않는다.
+   - 실행 직전 확인: `git merge-base --is-ancestor <code_commit> HEAD` 이고 `git diff --quiet <code_commit> HEAD -- src scripts` (코드가 그 뒤로 안 바뀜).
+4. 실행: 실험 명세(`experiments/<id>.yaml`)의 `command` 필드를 그대로 실행 (보통 `uv run python ...`)
+5. 결과는 `results/<experiment_id>/` 에 저장 (`metrics.json`, `summary.md`)
+6. `research-analysis` 스킬 절차로 분석하고, `research/FINDINGS.md` 수정안을 제시한다.
+
+### 명세의 엄격함은 실험의 비용·위험에 비례한다
+- **가벼운 실험**(로컬 CPU, 수 분 이내, 외부 영향 없음): 핵심 성공 기준 3~5개, provenance는 실행 명령·종료 코드·git revision·Python/주요 패키지 버전만. 시간 제한은 `timeout <초>`로 충분하며 자원 강제 실행기를 요구하지 않는다.
+- **무거운 실험**(GPU, HPC/Slurm, 수십 분 이상, 비용 발생): 자원 요청·중단 조건·체크포인트·로그 경로까지 상세히.
+- 실행을 사실상 불가능하게 만드는 조건(존재하지 않는 도구·인프라 요구)을 넣지 않는다. 필요하다고 판단되면 별도 제안으로 PI에게 올린다.
+
+문헌 조사 결과와 참고문헌은 `docs/literature/` (scholar 담당, `references.bib`). 직접 구한 PDF는 `docs/literature/pdfs/` (git 제외).
+- 계획(PI)과 명세·해석(analyst)은 최신 조사 보고서를 참고한다. 문헌을 언급할 때는 `(보고서 파일, 논문 키, 페이지)`를 달고, 보고서에 없는 문헌을 기억으로 인용하지 않는다.
+
+## 코드 작성 위임 (중요)
+**Hermes는 `src/`, `scripts/`, `schemas/`의 코드를 직접 작성·수정하지 않는다.** 코드 변경은 작업자 CLI에 맡기고, Hermes는 지시·검증·보고만 한다.
+
+| 작업자 | 언제 | 비고 |
+|---|---|---|
+| **Claude Code** (`claude`) | 기본. 코드 구현·수정·리팩터링·디버깅 | Claude 구독 |
+| **Antigravity CLI** (`agy`) | Claude가 사용 한도에 걸렸을 때, 긴 문서·로그 분석, 두 번째 의견이 필요할 때 | Google 계정 (Gemini 모델) |
+
+### 위임 절차
+1. 브랜치는 만들지 않는다. main에서 작업하고 commit은 PI가 한다.
+2. 아래 형식으로 작업 지시문을 만든다:
+   - 목표 / 수정 가능한 파일 / 수정 금지 파일 / 통과해야 할 테스트 명령 / 산출물
+   - 항상 포함: "`research/`, `experiments/*.yaml`, `config/`는 수정하지 말 것. git commit, 패키지 설치, 파일 삭제 금지."
+3. 프로젝트 루트에서 실행:
+   ```bash
+   # 기본: Claude Code
+   timeout 1800 claude -p "<지시문>" --permission-mode acceptEdits \
+     --allowedTools "Read,Edit,Write,Glob,Grep,Bash(uv run:*),Bash(python3:*),Bash(git diff:*),Bash(git status:*)" \
+     --max-turns 30 --output-format text
+
+   # 대안: Antigravity CLI
+   agy -p "<지시문>" --model gemini-3.8-flash-medium --mode accept-edits --output-format json --print-timeout 10m
+   ```
+   - `--dangerously-skip-permissions` 는 어떤 작업자에서도 사용하지 않는다.
+   - Claude Code는 `timeout 1800`(30분)으로 감싼다. 시간 초과(exit 124)면 부분 변경을 `git status`로 확인해 PI에게 보고하고, 작업을 더 작게 나눠 다시 맡긴다.
+   - **agy 모델은 항상 `--model gemini-3.8-flash-medium`.** argon(`gemini-4-argon-*`)은 한도가 작아 쓰지 않는다. 429(quota)면 다른 모델로 바꾸지 말고 `Resets in ...`과 함께 보고한다.
+   - **agy 주의:** 허용되지 않은 도구는 조용히 거부(soft-deny)되고 exit code는 0이다. 반드시 JSON의 `.status`가 `SUCCESS`인지, stderr에 거부 알림이 있는지 확인한다. 명령 허용 범위는 전역 `~/.gemini/antigravity-cli/settings.json`의 `permissions`로 관리된다(Hermes는 이 파일을 수정하지 않는다).
+4. 작업자가 끝나면 Hermes가 직접 검증한다: `git status`, `git diff --stat`, 지시문에 적은 테스트 명령 실행
+5. Discord에 **변경 파일 목록, diff 요약, 테스트 결과**를 보고한다. commit은 PI가 main에 알아서 한다(승인 불필요, 브랜치 없음).
+6. 작업자가 사용 한도·인증 오류로 실패하면 다른 작업자로 바꾸기 전에 연구자에게 알린다.
+
+## 교차 검토 원칙
+- 만든 모델과 검토하는 모델은 다르게 한다.
+  - 코드·논문 초안(Claude Code 작성) → reviewer(GPT)가 직접 검토
+  - 실험 판정·분석·명세·연구기록 수정안(GPT 작성) → reviewer 검토 + Claude 읽기 전용 2차 의견(`claude -p --model sonnet --allowedTools "Read,Glob,Grep"`)
+- PI의 재확인은 명령 결과(`kanban list`, `git status`, `researchctl doctor`)로만 하고, 산출물 내용 검증은 reviewer가 한다.
+- 검증 깊이는 결과의 무게에 비례한다. 해시 전수 대조·재실행은 요청이 있을 때만.
+
+## 환경 (uv)
+- 이 프로젝트의 Python 환경은 **uv**로 관리한다. 환경은 프로젝트 안 `.venv/` (git 제외), 정의는 `pyproject.toml` + `uv.lock` (git 포함).
+- 환경 준비/복원: `scripts/researchctl setup` (= `uv sync`). 자동 허용.
+- Python 버전은 `.python-version`(3.12)으로 고정한다. 바꾸려면 승인 필요 (`uv python pin <버전>` 후 `uv sync`).
+- Python 실행은 항상 `uv run python ...` (환경 활성화 불필요). `pip install`, `conda`, 시스템 Python에 직접 설치는 하지 않는다.
+- 패키지 추가는 `uv add <패키지>` — **승인 필요**. 추가 후 `pyproject.toml`과 `uv.lock`이 바뀐 것을 보고한다.
+- `uv`를 찾지 못하면 `~/.local/bin/uv`를 쓴다.
+- GPU/Slurm 사용 여부는 `config/project.yaml`의 `runtime`을 따른다. 기본은 로컬 CPU이며, GPU 작업은 항상 승인을 받는다.
+- GPU 실험은 명세에 `resources.gpu_count: 1` 이상과 `time_limit`을 적는다. PyTorch는 `uv add torch` (Linux PyPI 빌드에 CUDA 포함, 승인 필요). 코드는 `torch.cuda.is_available()`이 False면 바로 오류로 끝나게 해서 CPU로 몰래 도는 일이 없게 한다.
+
+## 답변 스타일
+- 한국어로, 짧게. 수치는 표로.
+- 관찰(측정값)과 해석(추론)을 구분해서 쓴다.

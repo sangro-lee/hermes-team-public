@@ -1,0 +1,15 @@
+{
+  "_comment": "scholar/reviewer 가 agy -p 로 논문을 읽을 수 있게 학술 도메인 읽기만 허용하고, 페이지 조작(클릭·입력)은 막는다. python3 tools/lab.py agy-perms 로 ~/.gemini/antigravity-cli/settings.json 에 합친다.",
+  "permissions": {
+    "allow": [
+      "read_url(arxiv.org)", "read_url(doi.org)", "read_url(semanticscholar.org)",
+      "read_url(openreview.net)", "read_url(proceedings.mlr.press)", "read_url(neurips.cc)",
+      "read_url(aps.org)", "read_url(quantum-journal.org)", "read_url(nature.com)",
+      "read_url(iopscience.iop.org)", "read_url(sciencedirect.com)", "read_url(acm.org)",
+      "read_url(ieee.org)", "read_url(springer.com)", "read_url(wiley.com)",
+      "read_url(pennylane.ai)", "read_url(docs.pennylane.ai)", "read_url(quantum.cloud.ibm.com)",
+      "read_url(github.com)", "read_url(scholar.google.com)"
+    ],
+    "deny": ["execute_url(*)"]
+  }
+}

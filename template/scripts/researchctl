@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Safe starter: read/validate/env-setup only. Does NOT submit or cancel Slurm jobs.
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+UV="$(command -v uv || true)"
+[[ -z "$UV" && -x "$HOME/.local/bin/uv" ]] && UV="$HOME/.local/bin/uv"
+
+need_uv() {
+  if [[ -z "$UV" ]]; then
+    echo "uv not found. Install: curl -LsSf https://astral.sh/uv/install.sh | sh" >&2
+    exit 2
+  fi
+}
+
+cmd="${1:-help}"
+shift || true
+
+case "$cmd" in
+  help|-h|--help)
+    cat <<'EOF'
+researchctl — safe starter interface (run from anywhere)
+
+Usage:
+  scripts/researchctl setup              uv sync: create/refresh .venv from pyproject.toml + uv.lock
+  scripts/researchctl config             show config file paths
+  scripts/researchctl state              print research/RESEARCH_STATE.md
+  scripts/researchctl list               list experiment specs and approval status
+  scripts/researchctl validate [FILES]   validate specs (default: all experiments/*.yaml)
+  scripts/researchctl doctor [--fix]     check project readiness (git, exec bits, uv env, specs);
+                                         --fix repairs: git init + first commit, chmod +x, uv sync
+
+Run Python code with:  uv run python <script>
+This scaffold does NOT submit Slurm jobs, cancel jobs, or delete files.
+EOF
+    ;;
+  setup)
+    need_uv
+    "$UV" sync
+    echo "OK: .venv ready ($("$UV" run python --version))"
+    ;;
+  doctor)
+    fix=0; [[ "${1:-}" == "--fix" ]] && fix=1
+    problems=0
+    ok()    { echo "OK     $*"; }
+    fixed() { echo "FIXED  $*"; }
+    warn()  { echo "WARN   $*"; problems=$((problems+1)); }
+    git_c() {  # commit identity fallback if the user has none configured
+      if git config user.email >/dev/null 2>&1; then git "$@"
+      else git -c user.name="Hermes Lab" -c user.email="hermes@localhost" "$@"; fi
+    }
+
+    # 1) executable bits
+    shopt -s nullglob
+    nonexec=()
+    for f in scripts/researchctl scripts/*.py src/*.py src/*.sh; do [[ -x "$f" ]] || nonexec+=("$f"); done
+    if [[ ${#nonexec[@]} -eq 0 ]]; then ok "exec bits"
+    elif [[ $fix -eq 1 ]]; then chmod +x "${nonexec[@]}"; fixed "chmod +x ${nonexec[*]}"
+    else warn "not executable: ${nonexec[*]}"; fi
+
+    # 2) uv environment
+    if [[ -z "$UV" ]]; then warn "uv not found (curl -LsSf https://astral.sh/uv/install.sh | sh)"
+    elif [[ ! -f pyproject.toml ]]; then warn "pyproject.toml missing"
+    elif [[ -d .venv && -f uv.lock ]] && "$UV" sync --locked --check >/dev/null 2>&1; then
+      ok "uv env ($("$UV" run python --version 2>/dev/null))"
+    elif [[ $fix -eq 1 ]]; then
+      if "$UV" sync --quiet; then fixed "uv sync ($("$UV" run python --version 2>/dev/null))"
+      else warn "uv sync failed"; fi
+    else warn ".venv/uv.lock missing or out of date (run: scripts/researchctl setup)"; fi
+
+    # 3) git repository
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1 && [[ "$(git rev-parse --show-toplevel)" == "$ROOT" ]]; then
+      if git rev-parse HEAD >/dev/null 2>&1; then ok "git repo (HEAD $(git rev-parse --short HEAD))"
+      elif [[ $fix -eq 1 ]]; then git add -A && git_c commit -qm "init (researchctl doctor)" && fixed "first commit $(git rev-parse --short HEAD)"
+      else warn "git repo has no commits"; fi
+      dirty=$(git status --porcelain -- pyproject.toml uv.lock | wc -l)
+      [[ $dirty -gt 0 ]] && warn "pyproject.toml/uv.lock have uncommitted changes (commit needs approval)"
+    elif [[ $fix -eq 1 ]]; then
+      git init -q -b main 2>/dev/null || git init -q
+      git add -A && git_c commit -qm "init (researchctl doctor)"
+      fixed "git init + first commit $(git rev-parse --short HEAD)"
+    else warn "not a git repository"; fi
+
+    # 4) experiment specs
+    specs=(experiments/*.yaml)
+    if [[ ${#specs[@]} -eq 0 ]]; then ok "no experiment specs yet"
+    elif [[ -n "$UV" && -d .venv ]] && "$UV" run python scripts/validate_experiment.py "${specs[@]}" >/dev/null 2>&1; then
+      ok "${#specs[@]} spec(s) valid"
+    else warn "spec validation failed (run: scripts/researchctl validate)"; fi
+
+    echo "---"
+    [[ $problems -eq 0 ]] && echo "READY" || { echo "$problems problem(s)"; [[ $fix -eq 0 ]] && echo "run: scripts/researchctl doctor --fix"; exit 1; }
+    ;;
+  config)
+    echo "Project root:    $ROOT"
+    echo "Project config:  config/project.yaml"
+    echo "Resource policy: config/resource_limits.yaml"
+    echo "Agent policy:    config/policy.yaml"
+    echo "Python env:      pyproject.toml + uv.lock -> .venv (uv: ${UV:-not found})"
+    ;;
+  state)
+    sed -n '1,200p' research/RESEARCH_STATE.md
+    ;;
+  list)
+    shopt -s nullglob
+    for f in experiments/*.yaml; do
+      status=$(grep -A1 '^approval:' "$f" | grep -o 'status: *"[a-z]*"' | grep -o '"[a-z]*"' | tr -d '"' || true)
+      printf '%-45s %s\n' "$f" "${status:-?}"
+    done
+    ;;
+  validate)
+    need_uv
+    shopt -s nullglob
+    files=("$@")
+    [[ ${#files[@]} -eq 0 ]] && files=(experiments/*.yaml)
+    if [[ ${#files[@]} -eq 0 ]]; then echo "No experiment specs found."; exit 0; fi
+    "$UV" run python scripts/validate_experiment.py "${files[@]}"
+    ;;
+  *)
+    echo "Unknown command: $cmd" >&2
+    echo "Run 'scripts/researchctl help'." >&2
+    exit 2
+    ;;
+esac

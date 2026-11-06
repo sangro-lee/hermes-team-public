@@ -1,0 +1,23 @@
+% 그림 공통 설정 (INSTALL.tex와 같은 글꼴·색)
+\usepackage{kotex}
+\setmainfont{Noto Sans CJK KR}[UprightFont={* DemiLight},BoldFont={* Bold}]
+\setsansfont{Noto Sans CJK KR}[UprightFont={* DemiLight},BoldFont={* Bold}]
+\setmonofont{D2Coding ligature}[Scale=0.92]
+\setmainhangulfont{Noto Sans CJK KR}[UprightFont={* DemiLight},BoldFont={* Bold}]
+\setsanshangulfont{Noto Sans CJK KR}[UprightFont={* DemiLight},BoldFont={* Bold}]
+\setmonohangulfont{D2Coding ligature}[Scale=0.92]
+\usetikzlibrary{positioning,fit,arrows.meta,backgrounds,calc,shapes.geometric}
+\definecolor{accent}{HTML}{0E7C86}
+\definecolor{ink}{HTML}{1F2328}
+\definecolor{muted}{HTML}{6B7280}
+\definecolor{msgbg}{HTML}{E6F3F4}
+\definecolor{okc}{HTML}{2E9E5B}
+\definecolor{warnc}{HTML}{CC3B3B}
+\tikzset{
+  box/.style={draw=#1!55!black,fill=#1!8,rounded corners=3pt,align=center,inner sep=5pt,text=ink},
+  box/.default=gray,
+  lab/.style={font=\footnotesize,text=muted,align=center},
+  arr/.style={-{Latex[length=2.4mm]},thick,#1},
+  arr/.default=ink,
+  num/.style={circle,fill=accent,text=white,font=\scriptsize\bfseries,inner sep=1.2pt,minimum size=4mm},
+}

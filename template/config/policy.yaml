@@ -1,0 +1,25 @@
+version: 1
+policy:
+  automatic:
+    - "read_project_docs"
+    - "search_code"
+    - "summarize_logs"
+    - "run_small_unit_tests"
+  require_approval:
+    - "submit_gpu_job"
+    - "cancel_job"
+    - "delete_files"
+    - "modify_research_state"
+    - "promote_skill"
+    - "merge_to_main"
+  forbidden:
+    - "sudo"
+    - "modify_ssh_or_system_configuration"
+    - "print_or_commit_credentials"
+    - "delete_untracked_user_data_without_confirmation"
+  file_write_scope:
+    - "research/"
+    - "experiments/"
+    - "results/"
+    - "docs/"
+  reminder: "이 YAML만으로 권한이 강제되지는 않습니다. 실행 래퍼와 OS 권한으로 구현해야 합니다."

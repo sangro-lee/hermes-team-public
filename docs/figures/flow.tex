@@ -1,0 +1,33 @@
+% 그림: 요청 하나가 처리되는 흐름
+\documentclass[tikz,border=10pt]{standalone}
+\input{fig-common}
+\begin{document}
+\begin{tikzpicture}[font=\small]
+  \tikzset{st/.style={box=#1,minimum height=13mm,text width=25mm}}
+  \node[st=green] (me) at (0,0) {\textbf{나}\\[-1pt]{\footnotesize Discord 채널}};
+  \node[st=violet] (pi) at (42mm,0) {\textbf{PI}\\[-1pt]{\footnotesize 계획 · 배정}};
+  \node[st=gray] (board) at (84mm,0) {\textbf{kanban 보드}\\[-1pt]{\footnotesize 카드 한 장 = 일 하나}};
+  % 직원 세로 묶음
+  \node[box=blue,minimum width=46mm,minimum height=7.5mm] (coder)   at (135mm,  15mm) {\textbf{coder} {\footnotesize · 코드 (Claude Code)}};
+  \node[box=blue,minimum width=46mm,minimum height=7.5mm] (analyst) at (135mm,   5mm) {\textbf{analyst} {\footnotesize · 실험·분석}};
+  \node[box=blue,minimum width=46mm,minimum height=7.5mm] (scholar) at (135mm,  -5mm) {\textbf{scholar} {\footnotesize · 문헌 (Antigravity)}};
+  \node[box=blue,minimum width=46mm,minimum height=7.5mm] (writer)  at (135mm, -15mm) {\textbf{writer} {\footnotesize · 초안 (Claude Code)}};
+  \begin{scope}[on background layer]
+    \node[draw=blue!40,dashed,rounded corners=4pt,fit=(coder)(writer),inner sep=4pt] (staff) {};
+  \end{scope}
+  \node[st=orange] (rev) at (188mm,0) {\textbf{reviewer}\\[-1pt]{\footnotesize 독립 검토}};
+  \node[st=gray,text width=27mm] (git) at (188mm,-36mm) {\textbf{PI가 commit}\\[-1pt]{\footnotesize 프로젝트 폴더 main}};
+
+  \draw[arr=accent] (me) -- node[lab,above]{\textcircled{\scriptsize 1} 요청} (pi);
+  \draw[arr=violet!60!black] (pi) -- node[lab,above]{\textcircled{\scriptsize 2} 카드로} (board);
+  \draw[arr=blue!55!black] (board) -- node[lab,above]{\textcircled{\scriptsize 3}} (staff.west|-board);
+  \draw[arr=orange!60!black] (staff.east|-rev) -- node[lab,above]{\textcircled{\scriptsize 4}} (rev);
+  \draw[arr=okc] (rev) -- node[lab,right]{\textcircled{\scriptsize 5} 통과} (git);
+  \draw[arr=red!60!black,dashed] (rev.north) |- node[lab,pos=0.75,above]{수정 요청 (2번 막히면 차단 감시가 진단)} ($(staff.north)+(0,0)$);
+  \draw[arr=accent] (git.west) -- node[lab,above,pos=0.5]{\textcircled{\scriptsize 6} Phase가 끝나거나 막혔을 때만 보고} (me.south|-git) -- (me.south);
+
+  \node[draw=accent,dashed,rounded corners=3pt,fill=msgbg,font=\footnotesize,align=left,text width=120mm,inner sep=5pt,anchor=north west]
+    at (-12mm,-44mm) {\textbf{\color{accent}내가 승인하는 것} --- Phase 시작, 목표·결론 변경, 계획에 없는 실험, 삭제. 
+    그 밖의 kanban 카드·검토·\mbox{commit}은 Phase 승인 안에서 PI가 대신 승인합니다.};
+\end{tikzpicture}
+\end{document}

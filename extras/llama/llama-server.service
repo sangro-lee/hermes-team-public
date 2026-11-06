@@ -1,0 +1,13 @@
+# 개인 데스크탑용 (systemd 사용자 서비스). LOCAL_MODEL.md 1장.
+# 설치: cp 이 파일 ~/.config/systemd/user/ && systemctl --user daemon-reload && systemctl --user enable --now llama-server
+[Unit]
+Description=llama.cpp server (Qwen3.6-35B-A3B for Hermes)
+After=network.target
+
+[Service]
+ExecStart=%h/llama.cpp/build/bin/llama-server -m %h/models/Qwen3.6-35B-A3B-APEX-I-Compact.gguf --alias qwen3.6-35b-a3b --jinja -c 131072 -np 1 -fa on -lm none -fitt 4096 --host 127.0.0.1 --port 8080
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

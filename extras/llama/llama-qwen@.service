@@ -1,0 +1,17 @@
+# 서버용 (systemd 시스템 서비스, 인스턴스마다 GPU 2개). LOCAL_MODEL.md 2장.
+# 인스턴스 이름 = 번호 N. 설정은 /etc/llama/qwen-N.env (CUDA_VISIBLE_DEVICES, PORT)
+# 설치: sudo cp 이 파일 /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl enable --now llama-qwen@1
+[Unit]
+Description=llama.cpp server %i (Qwen3.6-35B-A3B APEX I-Quality, 2 GPUs)
+After=network.target
+RequiresMountsFor=/scratch
+
+[Service]
+User=llama
+EnvironmentFile=/etc/llama/qwen-%i.env
+ExecStart=/scratch/llama/llama.cpp/build/bin/llama-server -m /scratch/llama/models/Qwen3.6-35B-A3B-APEX-I-Quality.gguf --alias qwen3.6-35b-a3b --jinja -ngl all -c 524288 -np 4 -ctk q8_0 -ctv q8_0 -fa on -lm none --host 127.0.0.1 --port ${PORT}
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

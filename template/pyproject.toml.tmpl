@@ -1,0 +1,14 @@
+[project]
+name = "{{NAME}}"
+version = "0.1.0"
+description = "{{SUMMARY}}"
+requires-python = ">=3.12,<3.15"   # 고정 버전은 .python-version (3.12)
+# 연구 코드가 쓰는 패키지는 `uv add <패키지>` 로 추가 (승인 필요)
+dependencies = []
+
+[dependency-groups]
+# 실험 명세 검증 도구 (scripts/validate_experiment.py) + 그림 (plots/)
+dev = ["pyyaml>=6", "jsonschema>=4.18", "matplotlib>=3.9"]
+
+[tool.uv]
+package = false   # 설치용 패키지가 아니라 연구 스크립트 모음

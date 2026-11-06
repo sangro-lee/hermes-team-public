@@ -1,0 +1,31 @@
+project:
+  name: "vqc-diffusion-research"
+  description: "VQC denoiser를 이용한 분자 생성 연구 파일럿"
+  owner: "REPLACE_WITH_RESEARCHER"
+  repository_root: "/REPLACE/ME/with/project/repository"
+
+research:
+  primary_question: "REPLACE_WITH_CURRENT_RESEARCH_QUESTION"
+  baseline: "MLP denoiser"
+  candidate_method: "VQC denoiser"
+  primary_metrics:
+    - "REPLACE_WITH_PRIMARY_METRIC"
+  data_version: "REPLACE_WITH_DATA_VERSION"
+
+runtime:
+  scheduler: "slurm"
+  default_partition: "REPLACE_WITH_PARTITION"
+  default_time_limit: "00:30:00"
+  default_gpu_count: 1
+  default_cpu_count: 4
+  default_memory: "16G"
+
+paths:
+  experiment_specs: "experiments/"
+  research_state: "research/RESEARCH_STATE.md"
+  results: "results/"
+  logs: "logs/"
+
+notes:
+  - "경로와 partition 이름은 실제 서버 환경에 맞게 수정할 것."
+  - "API 키, 비밀번호, SSH 개인키를 이 파일에 넣지 말 것."

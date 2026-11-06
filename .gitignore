@@ -1,0 +1,13 @@
+logs/
+state/
+# 내 PC 전용 (연구자 ID·프로젝트 목록·기억). 예시는 extras/, 만들기는 set_name.sh
+team.json
+projects.json
+souls/_team_ids.md
+memories/
+*.bak
+# 슬라이드에는 연구자 이름이 들어 있다
+docs/*.pptx
+__pycache__/
+*.pyc
+extras/discord-icons/

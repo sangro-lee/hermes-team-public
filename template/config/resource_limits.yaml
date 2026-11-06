@@ -1,0 +1,14 @@
+# Example limits only. Match these values to your institution's Slurm policy.
+defaults:
+  max_gpu_count: 1
+  max_cpus: 8
+  max_memory: "32G"
+  max_walltime: "02:00:00"
+  require_human_approval_above:
+    walltime: "00:30:00"
+    gpu_count: 1
+
+allowed_partitions:
+  - "REPLACE_WITH_ALLOWED_PARTITION"
+
+# 요청 제한은 launcher가 실제로 검사하지 않는 한 강제되지 않습니다.

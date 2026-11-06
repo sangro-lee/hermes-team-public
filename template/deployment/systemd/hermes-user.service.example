@@ -1,0 +1,17 @@
+# Example user service unit; adapt paths and security settings before installation.
+# Suggested location: ~/.config/systemd/user/hermes-researcher.service
+[Unit]
+Description=Hermes AI Researcher (example)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/REPLACE/WITH/PROJECT/PATH
+ExecStart=/REPLACE/WITH/HERMES/COMMAND
+Restart=on-failure
+RestartSec=10
+# Keep credentials out of this unit file.
+# Configure a restricted environment and file permissions for the actual service.
+
+[Install]
+WantedBy=default.target
